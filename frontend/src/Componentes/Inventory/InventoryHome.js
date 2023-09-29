@@ -1,4 +1,4 @@
-import { AppBar, Button, Drawer, IconButton, List, ListItem, ListItemText,Snackbar, Toolbar, Typography, makeStyles } from '@material-ui/core';
+import { AppBar, Button, Card, CardContent, CardMedia, Drawer, IconButton, List, ListItem, ListItemText,Snackbar, Toolbar, Typography, makeStyles } from '@material-ui/core';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { Link, Route, BrowserRouter as Router, Switch,useHistory} from 'react-router-dom';
@@ -12,6 +12,12 @@ const drawerWidth = 170;
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
+  },
+  option: {
+    fontSize: '16px', /* Adjust font size as needed */
+    padding: '5px',
+    color:'red', 
+    overflow:'visible',  /* Adjust padding as needed */
   },
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
@@ -219,9 +225,13 @@ function AddNew() {
     location: '',
     status: '',
   });
+     
+  const { category } = useParams();
   const [successMessage, setSuccessMessage] = useState('');
   const [customCategory, setCustomCategory] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [laptop, setLaptop] = useState([]);
   const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
   const [data, setData] = useState('');
   const handleChange = (e) => {
@@ -295,6 +305,21 @@ function AddNew() {
       })
       .catch((err) => console.log(err));
   };
+  useEffect(() => {
+    setLoading(true);
+
+    axios
+      .get('http://localhost:3001/inventory/categories/')
+      .then((response) => {
+        setLaptop(response.data);
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [category]);
   const handleCloseSuccessSnackbar = () => {
     setOpenSuccessSnackbar(false);
   };
@@ -316,15 +341,12 @@ function AddNew() {
                 name="category"
                 className={classes.input}
               >
-                <option value="">Select Product category To Add </option>
-                <option value="Printer">Printer</option>
-                <option value="Laptop">Laptop</option>
-                <option value="Desktop">Desktop</option>
-                <option value="Mobile&Phone">Mobile&Phone</option>
-                <option value="Dongle&Internet">Dongle&Internet</option>
-                <option value="Network Device">Network Device</option>
-                <option value="CCTV Camera & Tv">CCTV Camera & Tv</option>
-                <option value="UPS">UPS</option>
+                <option value="">Select Product category To Add </option >
+                {laptop.map((categoryOption) => (
+    <option key={categoryOption.id} value={categoryOption.category} className={classes.option}>
+      <p>{categoryOption.category}</p>
+    </option>
+  ))}
                 <option value="Other">Other</option>
               </select>
               </label>
@@ -476,12 +498,12 @@ function AddNew() {
 function CategoryList(){
   const { category } = useParams();
   const [loading, setLoading] = useState(true);
-  const [laptop, setLaptop] = useState(null);
+  const [laptop, setLaptop] = useState([]);
   useEffect(() => {
     setLoading(true);
 
     axios
-      .get('http://localhost:3001/inventory/categoryData/' + encodeURIComponent(category))
+      .get('http://localhost:3001/inventory/items/' + encodeURIComponent(category))
       .then((response) => {
         setLaptop(response.data);
       })
@@ -494,9 +516,27 @@ function CategoryList(){
   }, [category]);
   return(
     <div>
-hllo
+      hi
+    {loading && <div>Loading...</div>}
+  
+   
+    
+  {laptop.map((product) => (
+    <div key={product.id} value={product.category}>
+<CardContent>
+     {product.model}</CardContent>
+      {product.user}
+      {product.user_dept}
+      {product.user_position}
+      {product.serial_number}
+      {product.issue_date}
+      {product.location}
+      {product.status}
+      {product.remark}
       
     </div>
+  ))} 
+  </div>
   );
 
 }
